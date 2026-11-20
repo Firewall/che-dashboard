@@ -26,17 +26,6 @@ export const selectConfig = createSelector(selectState, state => state.config);
 
 export const selectNamespace = createSelector(selectState, state => state.namespace);
 
-export const selectSamplesIndexUrl = createSelector(
-  selectState,
-  state => state.config.samplesIndexUrl,
-);
-
-/** Empty on a cluster that publishes no console; the UI then links nothing. */
-export const selectClusterConsoleUrl = createSelector(
-  selectState,
-  state => state.clusterConsoleUrl,
-);
-
 export const selectDashboardUrl = createSelector(selectState, state => state.config.dashboardUrl);
 
 /** True when the data on screen comes from the in-memory client, not a cluster. */

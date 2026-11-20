@@ -16,30 +16,28 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
 
-import { setSandboxClient } from '@/services/client/instance';
-import { MockSandboxClient } from '@/services/client/mockClient';
+import { setAgentClient } from '@/services/client/instance';
+import { MockAgentClient } from '@/services/client/mockClient';
 import { AgentSpaceConfig, DEFAULT_CONFIG } from '@/services/config';
-import { AgentSandboxClient } from '@/services/types';
+import { AgentClient } from '@/services/types';
 import { RootState } from '@/store';
 import { rootReducer } from '@/store/rootReducer';
 
 export const TEST_NAMESPACE = 'user-ns';
 
 export function testConfig(overrides: Partial<AgentSpaceConfig> = {}): AgentSpaceConfig {
-  return { ...DEFAULT_CONFIG, mode: 'mock', namespace: TEST_NAMESPACE, ...overrides };
+  return { ...DEFAULT_CONFIG, namespace: TEST_NAMESPACE, ...overrides };
 }
 
-/** Mock client with the ready delay switched off so tests settle immediately. */
-export function testClient(): MockSandboxClient {
-  return new MockSandboxClient(TEST_NAMESPACE, 0);
+/** Mock client with the lifecycle delays switched off so tests settle immediately. */
+export function testClient(): MockAgentClient {
+  return new MockAgentClient(TEST_NAMESPACE, { gatewayMs: 0, readyMs: 0, clonedMs: 0 });
 }
 
 export type StoreOptions = {
-  client?: AgentSandboxClient;
+  client?: AgentClient;
   config?: AgentSpaceConfig;
   namespace?: string;
-  /** Console the cluster publishes, empty by default as a plain cluster has none. */
-  clusterConsoleUrl?: string;
   /** Slices to start from, merged over the bootstrapped defaults. */
   preloadedState?: Partial<RootState>;
 };
@@ -57,13 +55,12 @@ export function createTestStore({
   client,
   config,
   namespace,
-  clusterConsoleUrl = '',
   preloadedState = {},
 }: StoreOptions = {}) {
   const resolvedConfig = config ?? testConfig();
   const resolvedClient = client ?? testClient();
 
-  setSandboxClient(resolvedClient);
+  setAgentClient(resolvedClient);
 
   return configureStore({
     reducer: rootReducer,
@@ -73,7 +70,6 @@ export function createTestStore({
         isReady: true,
         config: resolvedConfig,
         namespace: namespace ?? resolvedConfig.namespace ?? TEST_NAMESPACE,
-        clusterConsoleUrl,
         clientMode: resolvedClient.mode,
       },
       ...preloadedState,

@@ -36,12 +36,12 @@ import {
 } from '@patternfly/react-core';
 import { ExternalLinkAltIcon } from '@patternfly/react-icons';
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 import { ToggleBarsContext } from '@/contexts/ToggleBars';
 import { useBranding } from '@/hooks/useBranding';
 import styles from '@/Layout/index.module.css';
-import { RecentSandboxes } from '@/Layout/RecentList';
+import { RecentAgents } from '@/Layout/RecentList';
 import { HeaderTools } from '@/Layout/Tools';
 import { ROUTE } from '@/Routes';
 import { dashboardRoute } from '@/services/config';
@@ -50,9 +50,14 @@ import { selectDashboardUrl, selectIsMockData } from '@/store/Bootstrap';
 import { useAppSelector } from '@/store/hooks';
 
 const NAV_ITEMS: { to: string; label: string }[] = [
-  { to: ROUTE.GETTING_STARTED, label: SECTION.GETTING_STARTED },
   { to: ROUTE.CREATE, label: SECTION.CREATE },
-  { to: ROUTE.SANDBOXES, label: SECTION.SANDBOXES },
+  { to: ROUTE.AGENTS, label: SECTION.AGENTS },
+];
+
+/** What the Workspaces area shows, mirroring the Che dashboard's own nav. */
+const WORKSPACES_NAV_ITEMS: { to: string; label: string }[] = [
+  { to: ROUTE.CREATE_WORKSPACE, label: 'Create Workspace' },
+  { to: ROUTE.WORKSPACES, label: 'Workspaces' },
 ];
 
 export type Props = {
@@ -66,7 +71,13 @@ export function Layout({ children, isDarkTheme = false }: Props): React.ReactEle
   const isMockData = useAppSelector(selectIsMockData);
   const branding = useBranding(isDarkTheme);
   const location = useLocation();
+  const navigate = useNavigate();
   const { logoSrc, title } = branding;
+
+  // The two areas of the bundle: the Agent Space routes, and the mock of the
+  // Che dashboard Workspaces page the masthead toggle leads to.
+  const isWorkspacesArea = location.pathname.startsWith(ROUTE.WORKSPACES);
+  const navItems = isWorkspacesArea ? WORKSPACES_NAV_ITEMS : NAV_ITEMS;
 
   // A page that needs the whole window - the expanded manifest - takes the
   // bars away through the context and puts them back when it is done.
@@ -87,12 +98,21 @@ export function Layout({ children, isDarkTheme = false }: Props): React.ReactEle
         </MastheadToggle>
         <MastheadBrand>
           <MastheadLogo>
-            <Brand
-              src={logoSrc}
-              alt={title}
-              heights={{ default: '36px' }}
-              data-testid="branding-logo"
-            />
+            {/* The logo is fetched from the dashboard's branding assets; when
+                they are not there - the standalone prototype has none - the
+                product title stands in rather than a broken image. */}
+            {logoSrc ? (
+              <Brand
+                src={logoSrc}
+                alt={title}
+                heights={{ default: '36px' }}
+                data-testid="branding-logo"
+              />
+            ) : (
+              <span className={styles.brandTitle} data-testid="branding-title">
+                {title}
+              </span>
+            )}
           </MastheadLogo>
         </MastheadBrand>
       </MastheadMain>
@@ -108,25 +128,26 @@ export function Layout({ children, isDarkTheme = false }: Props): React.ReactEle
             >
               {isMockData && (
                 <ToolbarItem>
-                  {/* The UI silently falls back to in-memory data when the
-                      Sandbox API is unreachable; say so instead of letting a
-                      demo be mistaken for a live cluster. */}
+                  {/* The prototype runs on in-memory data only; say so
+                      instead of letting a demo be mistaken for a live
+                      cluster. */}
                   <Label color="orange" data-testid="mock-mode-label">
                     Demo data
                   </Label>
                 </ToolbarItem>
               )}
               <ToolbarItem>
+                {/* Like the dashboard's own masthead: one button that goes to
+                    the other application. */}
                 <Button
-                  component="a"
-                  href={dashboardUrl}
                   variant={ButtonVariant.secondary}
                   size="sm"
                   icon={<ExternalLinkAltIcon />}
                   iconPosition="end"
-                  data-testid="workspaces-button"
+                  onClick={() => navigate(isWorkspacesArea ? ROUTE.AGENTS : ROUTE.WORKSPACES)}
+                  data-testid="area-button"
                 >
-                  Workspaces
+                  {isWorkspacesArea ? 'Agent Space' : 'Workspaces'}
                 </Button>
               </ToolbarItem>
               <HeaderTools
@@ -143,26 +164,40 @@ export function Layout({ children, isDarkTheme = false }: Props): React.ReactEle
   const sidebar = (
     <PageSidebar>
       <PageSidebarBody>
-        <Nav aria-label="Agent Space navigation">
+        <Nav
+          aria-label={isWorkspacesArea ? 'Workspaces navigation' : 'Agent Space navigation'}
+          data-testid={isWorkspacesArea ? 'workspaces-nav' : 'agent-space-nav'}
+        >
           <NavList>
-            {NAV_ITEMS.map(item => (
+            {navItems.map(item => (
               <NavItem
                 key={item.to}
-                isActive={location.pathname.startsWith(item.to)}
+                /* The agent area has detail routes under its entries, so a
+                   prefix marks the current section; the workspaces area is
+                   exactly two pages, so an exact match keeps both from being
+                   current at once. */
+                isActive={
+                  isWorkspacesArea
+                    ? location.pathname === item.to
+                    : location.pathname.startsWith(item.to)
+                }
                 data-testid={`nav-${item.to.slice(1)}`}
               >
                 {/* The tooltip sits inside the link, not around it: NavItem
                     marks the current section by cloning its own child, and a
                     wrapper would swallow that class. */}
                 <NavLink to={item.to}>
-                  <Tooltip content={pageTitle(item.label)} position="right">
+                  <Tooltip
+                    content={isWorkspacesArea ? item.label : pageTitle(item.label)}
+                    position="right"
+                  >
                     <span>{item.label}</span>
                   </Tooltip>
                 </NavLink>
               </NavItem>
             ))}
           </NavList>
-          <RecentSandboxes />
+          {!isWorkspacesArea && <RecentAgents />}
         </Nav>
       </PageSidebarBody>
     </PageSidebar>

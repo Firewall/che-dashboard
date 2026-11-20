@@ -14,25 +14,25 @@ import { NavGroup, NavItem } from '@patternfly/react-core';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { DeleteSandboxModal } from '@/components/DeleteSandboxModal';
-import { SandboxStatusIndicator } from '@/components/SandboxStatusIndicator';
-import { RecentSandboxActions } from '@/Layout/RecentList/Actions';
+import { AgentStatusIndicator } from '@/components/AgentStatusIndicator';
+import { DeleteAgentModal } from '@/components/DeleteAgentModal';
+import { RecentAgentActions } from '@/Layout/RecentList/Actions';
 import styles from '@/Layout/RecentList/index.module.css';
-import { buildSandboxDetailsRoute } from '@/Routes';
-import { getSandboxPhase } from '@/services/sandbox';
-import { Sandbox, SandboxAction } from '@/services/types';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { AGENT_TAB, buildAgentDetailsRoute } from '@/Routes';
+import { getAgentPhase } from '@/services/agent';
+import { Agent, AgentAction } from '@/services/types';
 import {
-  sandboxesActionCreators,
-  selectSandboxActionPendingName,
-  selectSandboxes,
-  selectSandboxesDeletingNames,
-} from '@/store/Sandboxes';
+  agentsActionCreators,
+  selectAgentActionPendingName,
+  selectAgents,
+  selectAgentsDeletingNames,
+} from '@/store/Agents';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 /** As many as the dashboard keeps in its own recent list. */
-export const MAX_RECENT_SANDBOXES = 5;
+export const MAX_RECENT_AGENTS = 5;
 
-function byNewestFirst(a: Sandbox, b: Sandbox): number {
+function byNewestFirst(a: Agent, b: Agent): number {
   const left = a.metadata.creationTimestamp ?? '';
   const right = b.metadata.creationTimestamp ?? '';
   return right.localeCompare(left);
@@ -41,13 +41,13 @@ function byNewestFirst(a: Sandbox, b: Sandbox): number {
 /**
  * The sidebar counterpart of the dashboard's "RECENT WORKSPACES".
  *
- * Clicking an entry opens its details page, which is where its phase, its
+ * Clicking an entry opens its details page, which is where its status, its
  * events and its manifest are.
  */
-export function RecentSandboxes(): React.ReactElement | null {
-  const sandboxes = useAppSelector(selectSandboxes);
-  const pendingName = useAppSelector(selectSandboxActionPendingName);
-  const deletingNames = useAppSelector(selectSandboxesDeletingNames);
+export function RecentAgents(): React.ReactElement | null {
+  const agents = useAppSelector(selectAgents);
+  const pendingName = useAppSelector(selectAgentActionPendingName);
+  const deletingNames = useAppSelector(selectAgentsDeletingNames);
   const dispatch = useAppDispatch();
   const location = useLocation();
   const navigate = useNavigate();
@@ -57,20 +57,20 @@ export function RecentSandboxes(): React.ReactElement | null {
   const isPending = pendingName !== undefined || deletingNames !== undefined;
 
   const recent = React.useMemo(
-    () => [...sandboxes].sort(byNewestFirst).slice(0, MAX_RECENT_SANDBOXES),
-    [sandboxes],
+    () => [...agents].sort(byNewestFirst).slice(0, MAX_RECENT_AGENTS),
+    [agents],
   );
 
   const handleOpen = React.useCallback(
-    (sandbox: Sandbox) => {
-      navigate(buildSandboxDetailsRoute(sandbox.metadata.name));
+    (agent: Agent) => {
+      navigate(buildAgentDetailsRoute(agent.metadata.name));
     },
     [navigate],
   );
 
   const handleRunAction = React.useCallback(
-    (name: string, action: SandboxAction) => {
-      void dispatch(sandboxesActionCreators.runSandboxAction(name, action));
+    (name: string, action: AgentAction) => {
+      void dispatch(agentsActionCreators.runAgentAction(name, action));
     },
     [dispatch],
   );
@@ -79,7 +79,7 @@ export function RecentSandboxes(): React.ReactElement | null {
     if (wantDelete === undefined) {
       return;
     }
-    await dispatch(sandboxesActionCreators.deleteSandbox(wantDelete));
+    await dispatch(agentsActionCreators.deleteAgent(wantDelete));
     setWantDelete(undefined);
   }, [dispatch, wantDelete]);
 
@@ -90,39 +90,40 @@ export function RecentSandboxes(): React.ReactElement | null {
   return (
     <>
       <NavGroup title="RECENT AGENTS" style={{ marginTop: '25px' }}>
-        {recent.map(sandbox => {
-          const name = sandbox.metadata.name;
-          const detailsRoute = buildSandboxDetailsRoute(name);
+        {recent.map(agent => {
+          const name = agent.metadata.name;
+          const detailsRoute = buildAgentDetailsRoute(name);
           return (
             <NavItem
-              key={sandbox.metadata.uid ?? name}
+              key={agent.metadata.uid ?? name}
               itemId={detailsRoute}
               className={styles.navItem}
-              data-testid={`recent-sandbox-${name}`}
+              data-testid={`recent-agent-${name}`}
               isActive={location.pathname === detailsRoute}
               preventDefault={true}
               tabIndex={0}
-              onClick={() => handleOpen(sandbox)}
+              onClick={() => handleOpen(agent)}
               onKeyDown={(event: React.KeyboardEvent) => {
                 if (event.key !== 'Enter' && event.key !== ' ') {
                   return;
                 }
                 // Enter on the kebab, or on an item of its menu, is not a
-                // request to open the sandbox.
+                // request to open the agent.
                 if (event.target !== event.currentTarget) {
                   return;
                 }
                 event.preventDefault();
-                handleOpen(sandbox);
+                handleOpen(agent);
               }}
             >
               <span>
-                <SandboxStatusIndicator phase={getSandboxPhase(sandbox)} sandboxName={name} />
+                <AgentStatusIndicator phase={getAgentPhase(agent)} agentName={name} />
                 <span>{name}</span>
               </span>
-              <RecentSandboxActions
-                sandbox={sandbox}
+              <RecentAgentActions
+                agent={agent}
                 isDisabled={isPending}
+                onOpen={name => navigate(buildAgentDetailsRoute(name, AGENT_TAB.AGENT))}
                 onRunAction={handleRunAction}
                 onDelete={setWantDelete}
               />
@@ -131,9 +132,9 @@ export function RecentSandboxes(): React.ReactElement | null {
         })}
       </NavGroup>
 
-      <DeleteSandboxModal
+      <DeleteAgentModal
         isOpen={wantDelete !== undefined}
-        sandboxNames={wantDelete === undefined ? [] : [wantDelete]}
+        agentNames={wantDelete === undefined ? [] : [wantDelete]}
         isDeleting={pendingName !== undefined && pendingName === wantDelete}
         onConfirm={() => void handleConfirmDelete()}
         onClose={() => setWantDelete(undefined)}

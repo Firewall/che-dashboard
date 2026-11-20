@@ -34,3 +34,15 @@
 .hideHeader {
   display: none;
 }
+
+/*
+ * The product title in place of a logo, for deployments where the branding
+ * assets are not reachable - the standalone prototype is served without the
+ * dashboard's static tree next to it.
+ */
+.brandTitle {
+  font-size: var(--pf-t--global--font--size--lg);
+  font-weight: var(--pf-t--global--font--weight--heading--default);
+  color: var(--pf-t--global--text--color--regular);
+  white-space: nowrap;
+}

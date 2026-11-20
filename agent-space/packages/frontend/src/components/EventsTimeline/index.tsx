@@ -26,17 +26,17 @@ import React from 'react';
 import styles from '@/components/EventsTimeline/index.module.css';
 import { EventsTimelineItem } from '@/components/EventsTimeline/Item';
 import { compareEventTime } from '@/services/format';
-import { SandboxEvent } from '@/services/types';
+import { AgentEvent } from '@/services/types';
 
 export type Props = {
-  events: SandboxEvent[];
-  /** The last listing failed, so an empty list says nothing about the sandbox. */
+  events: AgentEvent[];
+  /** The last listing failed, so an empty list says nothing about the agent. */
   hasFailed?: boolean;
 };
 
 /**
- * The namespace events that mention the sandbox, on the same vertical
- * timeline the dashboard uses for workspace events.
+ * The lifecycle events of an agent, on the same vertical timeline the
+ * dashboard uses for workspace events.
  */
 export function EventsTimeline({ events, hasFailed = false }: Props): React.ReactElement {
   const items = React.useMemo(
@@ -49,17 +49,15 @@ export function EventsTimeline({ events, hasFailed = false }: Props): React.Reac
       <EmptyState icon={FileIcon} titleText="No events to show." data-testid="no-events">
         <EmptyStateBody>
           {hasFailed
-            ? 'The events could not be listed, so this is not a statement about the sandbox.'
-            : `Kubernetes discards events after a retention window - an hour on most clusters,
-               three on OpenShift - so a sandbox that has been up longer than that has none left.
-               A sandbox that is still settling will fill this in within a few seconds.`}
+            ? 'The events could not be listed, so this is not a statement about the agent.'
+            : `An agent that is still starting will fill this in within a few seconds.`}
         </EmptyStateBody>
       </EmptyState>
     );
   }
 
   return (
-    <div role="log" aria-label="Agent space events" data-testid="events-timeline">
+    <div role="log" aria-label="Agent events" data-testid="events-timeline">
       <Stack>
         <StackItem>
           <Flex>

@@ -10,16 +10,14 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 
+import { agentDetailsReducer } from '@/store/AgentDetails';
+import { agentsReducer } from '@/store/Agents';
 import { bootstrapReducer } from '@/store/Bootstrap';
-import { catalogReducer } from '@/store/Catalog';
-import { samplesReducer } from '@/store/Samples';
-import { sandboxDetailsReducer } from '@/store/SandboxDetails';
-import { sandboxesReducer } from '@/store/Sandboxes';
+import { providersReducer } from '@/store/Providers';
 
 export const rootReducer = {
+  agentDetails: agentDetailsReducer,
+  agents: agentsReducer,
   bootstrap: bootstrapReducer,
-  catalog: catalogReducer,
-  samples: samplesReducer,
-  sandboxDetails: sandboxDetailsReducer,
-  sandboxes: sandboxesReducer,
+  providers: providersReducer,
 };

@@ -12,25 +12,22 @@
 
 import { createAction } from '@reduxjs/toolkit';
 
-import { createSandboxClient } from '@/services/client';
-import { setSandboxClient } from '@/services/client/instance';
-import { fetchClusterConsoleUrl } from '@/services/clusterInfo';
+import { createAgentClient } from '@/services/client';
+import { setAgentClient } from '@/services/client/instance';
 import { AgentSpaceConfig, loadConfig } from '@/services/config';
 import { resolveNamespace } from '@/services/namespace';
-import { AgentSandboxClient, SandboxError, toSandboxError } from '@/services/types';
+import { AgentClient, AgentError, toAgentError } from '@/services/types';
 import { AppThunk } from '@/store';
 
 export interface BootstrapPayload {
   config: AgentSpaceConfig;
   namespace: string;
-  clientMode: AgentSandboxClient['mode'];
-  /** Where the cluster console lives, or empty when there is none. */
-  clusterConsoleUrl: string;
+  clientMode: AgentClient['mode'];
 }
 
 export const bootstrapRequestAction = createAction('bootstrap/request');
 export const bootstrapReceiveAction = createAction<BootstrapPayload>('bootstrap/receive');
-export const bootstrapErrorAction = createAction<SandboxError>('bootstrap/receiveError');
+export const bootstrapErrorAction = createAction<AgentError>('bootstrap/receiveError');
 
 export const actionCreators = {
   /**
@@ -47,22 +44,20 @@ export const actionCreators = {
         dispatch(bootstrapRequestAction());
 
         const config = await loadConfig();
-        const client = await createSandboxClient(config);
-        setSandboxClient(client);
+        const client = createAgentClient(config);
+        setAgentClient(client);
         const namespace = await resolveNamespace(config, client);
-        const clusterConsoleUrl = await fetchClusterConsoleUrl(config.kubeApiBaseUrl);
 
         dispatch(
           bootstrapReceiveAction({
             config,
             namespace,
             clientMode: client.mode,
-            clusterConsoleUrl,
           }),
         );
       } catch (e) {
-        setSandboxClient(undefined);
-        dispatch(bootstrapErrorAction(toSandboxError(e)));
+        setAgentClient(undefined);
+        dispatch(bootstrapErrorAction(toAgentError(e)));
       }
     },
 };

@@ -330,7 +330,10 @@ export async function buildLogoSrc(
     if (!logoFile.toLowerCase().endsWith('.svg')) {
       return logoUrl;
     }
-    return (await processSvgLogo(logoUrl, isDarkTheme)) ?? logoUrl;
+    // An empty answer rather than the URL: the URL is what just failed to
+    // load, so handing it back would only render a broken image - the
+    // masthead falls back to the product title instead.
+    return (await processSvgLogo(logoUrl, isDarkTheme)) ?? '';
   }
 
   // SVG renders crisper as a URI-encoded document than as base64.

@@ -11,7 +11,7 @@
  */
 
 import { AgentSpaceConfig } from '@/services/config';
-import { AgentSandboxClient } from '@/services/types';
+import { AgentClient } from '@/services/types';
 
 /**
  * Che provisions one namespace per user and the dashboard backend exposes it
@@ -65,7 +65,7 @@ async function fetchCheNamespace(): Promise<string | undefined> {
  */
 export async function resolveNamespace(
   config: AgentSpaceConfig,
-  client: AgentSandboxClient,
+  client: AgentClient,
 ): Promise<string> {
   if (config.namespace) {
     return config.namespace;

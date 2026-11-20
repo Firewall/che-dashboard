@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) 2018-2025 Red Hat, Inc.
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *   Red Hat, Inc. - initial API and implementation
+ */
+
+/* One session panel per agent: a header line, the prototype note, and the
+   harness terminal filling the rest of the window. */
+.session {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--xs);
+
+  /* What is left of the window under the masthead, the details header and
+     the tabs; the floor keeps small windows usable. */
+  height: calc(100dvh - 20rem);
+  min-height: 24rem;
+  margin-top: var(--pf-t--global--spacer--md);
+}
+
+.header {
+  font-size: var(--pf-t--global--font--size--sm);
+  color: var(--pf-t--global--text--color--subtle);
+}
+
+.note {
+  font-size: var(--pf-t--global--font--size--xs);
+  font-style: italic;
+  color: var(--pf-t--global--text--color--subtle);
+}

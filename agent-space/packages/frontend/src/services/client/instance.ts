@@ -10,19 +10,20 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 
-import { AgentSandboxClient } from '@/services/types';
+import { AgentClient } from '@/services/types';
 
 /**
- * The API client lives next to the store rather than inside it: it holds a
- * live connection and is not serializable, so putting it in Redux state would
- * break the serializability check the dashboard store also enforces.
+ * The API client lives next to the store rather than inside it: it holds
+ * timers and live callbacks and is not serializable, so putting it in Redux
+ * state would break the serializability check the dashboard store also
+ * enforces.
  *
  * This mirrors how the dashboard reaches its backend - thunks import the API
  * module instead of receiving a client through state.
  */
-let client: AgentSandboxClient | undefined;
+let client: AgentClient | undefined;
 
-export function setSandboxClient(next: AgentSandboxClient | undefined): void {
+export function setAgentClient(next: AgentClient | undefined): void {
   client = next;
 }
 
@@ -30,9 +31,9 @@ export function setSandboxClient(next: AgentSandboxClient | undefined): void {
  * @throws when called before the bootstrap thunk has resolved a client; every
  * page is rendered behind that gate, so this is a programming error.
  */
-export function getSandboxClient(): AgentSandboxClient {
+export function getAgentClient(): AgentClient {
   if (client === undefined) {
-    throw new Error('The Agent Sandbox client is used before Agent Space finished starting up.');
+    throw new Error('The Agent Space client is used before the application finished starting up.');
   }
   return client;
 }

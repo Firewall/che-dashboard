@@ -100,7 +100,7 @@ export function ManifestViewer({ value, id, isExpanded }: Props): React.ReactEle
   return (
     <div
       className={isExpanded ? styles.manifestViewerExpanded : styles.manifestViewer}
-      data-testid="sandbox-manifest"
+      data-testid="agent-manifest"
     >
       <CodeMirror
         readOnly={true}

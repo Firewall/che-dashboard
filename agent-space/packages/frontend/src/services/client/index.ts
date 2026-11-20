@@ -10,32 +10,20 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 
-import { KubeSandboxClient } from '@/services/client/kubeClient';
-import { MockSandboxClient } from '@/services/client/mockClient';
+import { MockAgentClient } from '@/services/client/mockClient';
 import { AgentSpaceConfig } from '@/services/config';
-import { AgentSandboxClient } from '@/services/types';
+import { AgentClient } from '@/services/types';
 
-export { KubeSandboxClient } from '@/services/client/kubeClient';
-export { MockSandboxClient } from '@/services/client/mockClient';
+export { MockAgentClient } from '@/services/client/mockClient';
 
 /**
  * Picks the client to talk to.
  *
- * In `auto` mode the Sandbox API group is probed once at startup; when it is
- * not served - no controller installed, or the user cannot reach it - the UI
- * falls back to the in-memory client instead of showing an empty error page.
+ * The prototype has no cluster path: the OpenShell gateway and the
+ * DevWorkspace Operator conversation it would stand in for are not built yet,
+ * so every request runs against the in-memory client and the masthead says
+ * so with its "Demo data" label.
  */
-export async function createSandboxClient(config: AgentSpaceConfig): Promise<AgentSandboxClient> {
-  if (config.mode === 'mock') {
-    return new MockSandboxClient(config.namespace || undefined);
-  }
-
-  const kubeClient = new KubeSandboxClient(config.kubeApiBaseUrl);
-  if (config.mode === 'cluster') {
-    return kubeClient;
-  }
-
-  return (await kubeClient.isAvailable())
-    ? kubeClient
-    : new MockSandboxClient(config.namespace || undefined);
+export function createAgentClient(config: AgentSpaceConfig): AgentClient {
+  return new MockAgentClient(config.namespace || undefined);
 }

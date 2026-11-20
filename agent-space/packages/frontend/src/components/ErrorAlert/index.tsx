@@ -13,30 +13,30 @@
 import { Alert, AlertActionCloseButton, AlertVariant } from '@patternfly/react-core';
 import React from 'react';
 
-import { SandboxError } from '@/services/types';
+import { AgentError } from '@/services/types';
 
 export type Props = {
   title: string;
-  error: SandboxError | undefined;
+  error: AgentError | undefined;
   onClose?: () => void;
 };
 
 /**
- * Turns a 403 into advice instead of a stack trace: the most common failure in
- * this UI is a user who may list workspaces but not sandboxes.
+ * Turns a failure into advice instead of a stack trace: the most common one in
+ * this UI is an agent that is gone by the time the request reaches it.
  */
-function describe(error: SandboxError): string {
+function describe(error: AgentError): string {
   switch (error.statusCode) {
     case 401:
       return `${error.message} Your session may have expired - reload the page to sign in again.`;
     case 403:
       return `${error.message} You do not have permission to perform this operation in this namespace.`;
     case 404:
-      return `${error.message} It may have been deleted, or the Agent Sandbox CRDs may not be installed on this cluster.`;
+      return `${error.message} It may have been deleted.`;
     case 409:
       return `${error.message} Choose a different name.`;
     case 0:
-      return `${error.message} The Kubernetes API could not be reached from the browser.`;
+      return `${error.message} The API could not be reached from the browser.`;
     default:
       return error.message;
   }

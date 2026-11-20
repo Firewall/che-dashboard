@@ -11,222 +11,130 @@
  */
 
 /**
- * Types for the `agents.x-k8s.io` Sandbox resource.
- * See https://agent-sandbox.sigs.k8s.io/ and
- * https://github.com/kubernetes-sigs/agent-sandbox
- */
-
-export const SANDBOX_API_GROUP = 'agents.x-k8s.io';
-export const SANDBOX_API_VERSION = 'v1beta1';
-export const SANDBOX_API_VERSION_FULL = `${SANDBOX_API_GROUP}/${SANDBOX_API_VERSION}`;
-export const SANDBOX_KIND = 'Sandbox';
-export const SANDBOX_PLURAL = 'sandboxes';
-
-export type ResourceList = {
-  cpu?: string;
-  memory?: string;
-  'ephemeral-storage'?: string;
-};
-
-/** Reads one key of a Secret. The key may be absent when `optional` is set. */
-export interface SecretKeySelector {
-  name: string;
-  key: string;
-  optional?: boolean;
-}
-
-export interface SandboxEnvVar {
-  name: string;
-  /** Literal value. Mutually exclusive with {@link SandboxEnvVar.valueFrom}. */
-  value?: string;
-  valueFrom?: {
-    secretKeyRef?: SecretKeySelector;
-  };
-}
-
-export interface SandboxVolumeMount {
-  name: string;
-  mountPath: string;
-  subPath?: string;
-  readOnly?: boolean;
-}
-
-export interface SandboxContainerPort {
-  name?: string;
-  containerPort: number;
-  protocol?: string;
-}
-
-export interface SandboxContainer {
-  name: string;
-  image: string;
-  command?: string[];
-  args?: string[];
-  env?: SandboxEnvVar[];
-  ports?: SandboxContainerPort[];
-  volumeMounts?: SandboxVolumeMount[];
-  workingDir?: string;
-  resources?: {
-    limits?: ResourceList;
-    requests?: ResourceList;
-  };
-}
-
-/**
- * The volume sources the wizard and the samples use. Not the whole core/v1
- * union - a shape the UI never writes is a shape it cannot get wrong.
- */
-export interface SandboxVolume {
-  name: string;
-  emptyDir?: { medium?: string; sizeLimit?: string };
-  persistentVolumeClaim?: { claimName: string; readOnly?: boolean };
-  secret?: { secretName: string; optional?: boolean; defaultMode?: number };
-  configMap?: { name: string; optional?: boolean; defaultMode?: number };
-}
-
-/**
- * Pod-level security context.
+ * Types for the OpenShell agent: a DevWorkspace whose devfile carries the
+ * `controller.devfile.io/workload-kind: openshell` attribute, so the
+ * DevWorkspace Operator asks an NVIDIA OpenShell gateway for a sandbox
+ * instead of starting an ordinary pod.
  *
- * Leave it unset on OpenShift: the `restricted-v2` SCC assigns a UID from the
- * namespace range and rejects a pod that asks for one outside it.
+ * See https://devfile.io/docs and the OpenShell gateway documentation.
  */
-export interface SandboxPodSecurityContext {
-  runAsUser?: number;
-  runAsGroup?: number;
-  runAsNonRoot?: boolean;
-  fsGroup?: number;
-  seccompProfile?: { type: string };
-}
 
-export interface SandboxPodSpec {
-  runtimeClassName?: string;
-  restartPolicy?: string;
-  automountServiceAccountToken?: boolean;
-  serviceAccountName?: string;
-  securityContext?: SandboxPodSecurityContext;
-  initContainers?: SandboxContainer[];
-  containers: SandboxContainer[];
-  volumes?: SandboxVolume[];
+export const DEVWORKSPACE_API_VERSION = 'workspace.devfile.io/v1alpha2';
+export const DEVWORKSPACE_KIND = 'DevWorkspace';
+
+/** Devfile attribute that routes the workspace to the OpenShell controller. */
+export const WORKLOAD_KIND_ATTRIBUTE = 'controller.devfile.io/workload-kind';
+
+/** Annotation the selected OpenShell providers are recorded in. */
+export const OPENSHELL_PROVIDER_ANNOTATION = 'controller.devfile.io/openshell-provider';
+
+/**
+ * A named credential set managed by the OpenShell administrator, e.g.
+ * `anthropic` or `openai`. The agent never sees the real keys: the
+ * gateway injects them into the sandbox.
+ */
+export interface OpenshellProvider {
+  id: string;
+  /** Display name, e.g. `Google Vertex AI`. */
+  name: string;
+  /** One line the create form shows under the checkbox. */
+  description: string;
 }
 
 /**
- * `Suspended` tears the pod down and keeps the volumes; `Running` brings it
- * back. This is the only lifecycle switch the v1beta1 API has - there is no
- * `replicas` and no `shutdown` field.
+ * The container image every agent runs. Fixed for the prototype: the real
+ * feature resolves it from the OpenShell gateway configuration.
  */
-export type SandboxOperatingMode = 'Running' | 'Suspended';
+export const AGENT_IMAGE =
+  'quay.io/devfile/universal-developer-image@sha256:3f9c1a7e5d2b8f4a6c0e9d3b7f1a5c8e2d6b9f4a7c1e5d8b3f6a0c9e2d5b8f41';
+
+/** Policy every agent runs under. Read-only: the administrator owns it. */
+export const AGENT_POLICY = 'org-default';
 
 /**
- * A claim the controller provisions for the sandbox, StatefulSet-style.
+ * Lifecycle phase of an agent, as `status.phase` reports it.
  *
- * The container mounts it by the template name - the controller adds the
- * matching `volumes` entry to the pod itself. Immutable after creation.
+ * `Starting` covers everything between "the DevWorkspace was asked to start"
+ * and "the sandbox is ready and the repository is cloned".
  */
-export interface PersistentVolumeClaimTemplate {
-  metadata: {
-    name: string;
-    labels?: Record<string, string>;
-    annotations?: Record<string, string>;
-  };
-  spec: {
-    accessModes?: string[];
-    storageClassName?: string;
-    resources?: {
-      requests?: {
-        storage?: string;
-      };
-    };
-  };
+export enum AgentPhase {
+  STARTING = 'Starting',
+  RUNNING = 'Running',
+  STOPPED = 'Stopped',
 }
 
-export interface SandboxSpec {
-  podTemplate: {
-    metadata?: {
-      labels?: Record<string, string>;
-      annotations?: Record<string, string>;
-    };
-    spec: SandboxPodSpec;
-  };
-  /** Storage provisioned per sandbox; survives a suspend/resume cycle. */
-  volumeClaimTemplates?: PersistentVolumeClaimTemplate[];
-  operatingMode?: SandboxOperatingMode;
-  /** When true, the controller creates a headless Service for the pod. */
-  service?: boolean;
-  /** When the sandbox expires. Unset means it never does. */
-  shutdownTime?: string;
-  /** What happens to the object at expiry. The pod and the Service always go. */
-  shutdownPolicy?: 'Delete' | 'Retain';
-}
+/** The two lifecycle actions the UI offers. */
+export type AgentAction = 'start' | 'stop';
 
-export type ConditionStatus = 'True' | 'False' | 'Unknown';
-
-export interface SandboxCondition {
-  type: string;
-  status: ConditionStatus;
-  reason?: string;
-  message?: string;
-  lastTransitionTime?: string;
-  observedGeneration?: number;
-}
-
-export interface SandboxStatus {
-  conditions?: SandboxCondition[];
-  /** Name of the Service the controller created for the sandbox. */
-  service?: string;
-  serviceFQDN?: string;
-  observedGeneration?: number;
-  nodeName?: string;
-  podIPs?: string[];
-}
-
-export interface SandboxMetadata {
+export interface AgentMetadata {
   name: string;
   namespace?: string;
   uid?: string;
-  generation?: number;
   resourceVersion?: string;
   creationTimestamp?: string;
-  deletionTimestamp?: string;
-  labels?: Record<string, string>;
   annotations?: Record<string, string>;
 }
 
-export interface Sandbox {
-  apiVersion?: string;
-  kind?: string;
-  metadata: SandboxMetadata;
-  spec: SandboxSpec;
-  status?: SandboxStatus;
+/** One git project of the devfile. The repository is cloned on launch. */
+export interface AgentProject {
+  name: string;
+  git: {
+    /** Remote name to URL, as a devfile `git` project carries it. */
+    remotes: Record<string, string>;
+  };
+}
+
+/** The single container component every agent is made of. */
+export interface AgentComponent {
+  name: string;
+  container: {
+    image: string;
+  };
+}
+
+export interface AgentSpec {
+  /** Whether the DevWorkspace should be running. */
+  started: boolean;
+  template: {
+    attributes?: Record<string, string>;
+    projects?: AgentProject[];
+    components?: AgentComponent[];
+  };
+}
+
+export interface AgentStatus {
+  phase?: AgentPhase;
+  /** What the OpenShell controller reports about the sandbox. */
+  openshell?: {
+    /** Name of the sandbox the gateway provided, e.g. `dw-<name>-<4 hex>`. */
+    sandbox?: string;
+  };
 }
 
 /**
- * Body of a merge patch (RFC 7386), as `patchSandbox` sends it.
- *
- * It is not a `Partial<Sandbox>`: an annotation is removed by sending `null`
- * for its key, which a `Record<string, string>` cannot express. Omitting the
- * key leaves whatever is on the server in place.
+ * The agent as the API server would return it. The Manifest tab shows this
+ * object verbatim, so it is kept close to a real DevWorkspace.
  */
-export interface SandboxPatch {
-  metadata?: {
-    labels?: Record<string, string | null>;
-    annotations?: Record<string, string | null>;
-  };
-  spec?: Partial<SandboxSpec>;
-}
-
-export interface SandboxList {
+export interface Agent {
   apiVersion?: string;
   kind?: string;
-  metadata?: {
-    resourceVersion?: string;
-  };
-  items: Sandbox[];
+  metadata: AgentMetadata;
+  spec: AgentSpec;
+  status?: AgentStatus;
+}
+
+/** What the create form submits: the repository and the one AI provider. */
+export interface CreateAgentRequest {
+  repositoryUrl: string;
+  /** The OpenShell AI provider id, e.g. `anthropic`. */
+  providerId: string;
 }
 
 /**
  * Subset of a Kubernetes core/v1 Event, as rendered on the details page.
+ * The mock gateway appends one per lifecycle step.
  */
-export interface SandboxEvent {
+export interface AgentEvent {
   uid: string;
   type?: string;
   reason?: string;
@@ -238,56 +146,35 @@ export interface SandboxEvent {
 }
 
 /**
- * Lifecycle phase derived from spec + status. The controller does not publish a
- * single phase field, so {@link getSandboxPhase} folds the conditions into one.
- */
-export enum SandboxPhase {
-  RUNNING = 'Running',
-  PENDING = 'Pending',
-  SUSPENDED = 'Suspended',
-  /** The pod ran to completion and will not be restarted on its own. */
-  COMPLETED = 'Completed',
-  FAILED = 'Failed',
-  BLOCKED = 'Blocked',
-  EXPIRED = 'Expired',
-  TERMINATING = 'Terminating',
-}
-
-/** Actions that are one patch of `spec.operatingMode` and nothing more. */
-export type SandboxOperatingModeAction = 'suspend' | 'resume';
-
-export type SandboxAction = SandboxOperatingModeAction | 'restart';
-
-/**
- * Error raised by the sandbox clients. Carries the HTTP status code so callers
+ * Error raised by the agent client. Carries the HTTP status code so callers
  * can tell "not found" from "forbidden" without matching on message strings.
  */
-export class SandboxClientError extends Error {
+export class AgentClientError extends Error {
   constructor(
     public readonly statusCode: number,
     message: string,
     public readonly reason?: string,
   ) {
     super(message);
-    this.name = 'SandboxClientError';
+    this.name = 'AgentClientError';
   }
 }
 
 /**
- * Plain-object form of {@link SandboxClientError}.
+ * Plain-object form of {@link AgentClientError}.
  *
  * Errors are rendered from the Redux store, and an `Error` instance is not
  * serializable, so the thunks convert on the way in and keep the status code
  * the UI needs to turn a failure into advice.
  */
-export interface SandboxError {
+export interface AgentError {
   message: string;
   statusCode?: number;
   reason?: string;
 }
 
-export function toSandboxError(e: unknown): SandboxError {
-  if (e instanceof SandboxClientError) {
+export function toAgentError(e: unknown): AgentError {
+  if (e instanceof AgentClientError) {
     return { message: e.message, statusCode: e.statusCode, reason: e.reason };
   }
   if (e instanceof Error) {
@@ -303,7 +190,7 @@ export function toSandboxError(e: unknown): SandboxError {
  * the reason decides whenever the API server sends one.
  */
 export function isAlreadyExistsError(e: unknown): boolean {
-  if (!(e instanceof SandboxClientError)) {
+  if (!(e instanceof AgentClientError)) {
     return false;
   }
   return e.reason === undefined ? e.statusCode === 409 : e.reason === 'AlreadyExists';
@@ -313,40 +200,40 @@ export function isAlreadyExistsError(e: unknown): boolean {
  * What a watch reports. `ERROR` means the stream broke - the caller has to
  * list again to resynchronise, because events may have been missed.
  */
-export type SandboxChangeEvent = {
+export type AgentChangeEvent = {
   type: 'ADDED' | 'MODIFIED' | 'DELETED';
-  sandbox: Sandbox;
+  agent: Agent;
 };
 
-export type SandboxWatchEvent = SandboxChangeEvent | { type: 'ERROR'; message: string };
+export type AgentWatchEvent = AgentChangeEvent | { type: 'ERROR'; message: string };
 
-export type SandboxWatchListener = (event: SandboxWatchEvent) => void;
+export type AgentWatchListener = (event: AgentWatchEvent) => void;
 
 /** Stops a watch. Calling it twice is safe. */
 export type StopWatching = () => void;
 
-export interface AgentSandboxClient {
-  /** 'cluster' talks to a real API server, 'mock' keeps everything in memory. */
-  readonly mode: 'cluster' | 'mock';
-  /**
-   * The whole list object, not only its items: the `resourceVersion` of the
-   * collection is where a watch has to start from.
-   */
-  listSandboxes(namespace: string): Promise<SandboxList>;
-  getSandbox(namespace: string, name: string): Promise<Sandbox>;
-  createSandbox(namespace: string, sandbox: Sandbox): Promise<Sandbox>;
-  deleteSandbox(namespace: string, name: string): Promise<void>;
-  patchSandbox(namespace: string, name: string, patch: SandboxPatch): Promise<Sandbox>;
-  listEvents(namespace: string, name: string): Promise<SandboxEvent[]>;
-  /** Namespaces the user may pick from; empty when listing is not permitted. */
+/**
+ * The backend the prototype talks to. The mock implementation is the only
+ * one: the real feature talks to the DevWorkspace API through the dashboard
+ * backend, which is out of scope for the prototype.
+ */
+export interface AgentClient {
+  /** Always `mock`: the prototype runs on demo data. */
+  readonly mode: 'mock';
+  listAgents(namespace: string): Promise<Agent[]>;
+  getAgent(namespace: string, name: string): Promise<Agent>;
+  createAgent(namespace: string, request: CreateAgentRequest): Promise<Agent>;
+  deleteAgent(namespace: string, name: string): Promise<void>;
+  startAgent(namespace: string, name: string): Promise<Agent>;
+  stopAgent(namespace: string, name: string): Promise<Agent>;
+  /** Credential sets the OpenShell administrator has published. */
+  listProviders(): Promise<OpenshellProvider[]>;
+  listEvents(namespace: string, name: string): Promise<AgentEvent[]>;
+  /** Namespaces the user may work in; the mock offers the one it holds. */
   listNamespaces(): Promise<string[]>;
   /**
-   * Streams changes to the sandboxes of a namespace, starting after
-   * `resourceVersion` - the one the matching list call returned.
+   * Streams changes to the agents of a namespace, so a status that changes
+   * on its own - Starting becoming Running - reaches the UI without a poll.
    */
-  watchSandboxes(
-    namespace: string,
-    resourceVersion: string,
-    listener: SandboxWatchListener,
-  ): StopWatching;
+  watchAgents(namespace: string, listener: AgentWatchListener): StopWatching;
 }

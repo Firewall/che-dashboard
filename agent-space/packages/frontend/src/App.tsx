@@ -23,8 +23,8 @@ import {
 import React from 'react';
 import { HashRouter } from 'react-router-dom';
 
+import { useAgentWatch } from '@/hooks/useAgentWatch';
 import { useDashboardTheme } from '@/hooks/useDashboardTheme';
-import { useSandboxWatch } from '@/hooks/useSandboxWatch';
 import { Layout } from '@/Layout';
 import { AppRoutes } from '@/Routes';
 import { DEFAULT_CONFIG } from '@/services/config';
@@ -33,8 +33,8 @@ import {
   selectBootstrapError,
   selectBootstrapIsReady,
 } from '@/store/Bootstrap';
-import { catalogActionCreators } from '@/store/Catalog';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { providersActionCreators } from '@/store/Providers';
 
 /**
  * Resolves the runtime configuration, the API client and the namespace before
@@ -55,16 +55,16 @@ export function App(): React.ReactElement {
     bootstrap();
   }, [bootstrap]);
 
-  // The editor and AI catalogues come from the dashboard backend and change
-  // only when an administrator edits a ConfigMap, so once per session is
-  // enough. A failure is not fatal - the selectors simply hide themselves.
+  // The provider list comes from the OpenShell administrator's configuration
+  // and only changes with it, so once per session is enough. The create form
+  // reads it.
   React.useEffect(() => {
     if (isReady) {
-      void dispatch(catalogActionCreators.requestCatalog());
+      void dispatch(providersActionCreators.requestProviders());
     }
   }, [dispatch, isReady]);
 
-  useSandboxWatch(isReady);
+  useAgentWatch(isReady);
 
   if (error !== undefined) {
     return (

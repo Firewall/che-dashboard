@@ -12,15 +12,14 @@
 
 /**
  * Agent Space is served next to the dashboard and shares its masthead, so a
- * bare "Agent Spaces" heading gives no clue which application is on screen.
- * Every section is named after the application it belongs to instead.
+ * bare "Agents" heading gives no clue which application is on screen. Every
+ * section is named after the application it belongs to instead.
  */
 export const APP_TITLE = 'Agent Space';
 
 export const SECTION = {
-  GETTING_STARTED: 'Getting Started',
   CREATE: 'Create Agent',
-  SANDBOXES: 'Agents',
+  AGENTS: 'Agents',
 } as const;
 
 export function pageTitle(section: string): string {

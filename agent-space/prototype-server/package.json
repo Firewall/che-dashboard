@@ -1,0 +1,23 @@
+{
+  "name": "@eclipse-che/agent-space-prototype-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prototype stand-in for the dashboard backend: serves the Agent Space bundle and relays real PTY sessions (shell, Claude Code, Codex, Gemini CLI) over a WebSocket",
+  "license": "EPL-2.0",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "postinstall": "node fix-pty-permissions.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.23.0"
+  },
+  "optionalDependencies": {
+    "node-pty": "^1.1.0",
+    "@homebridge/node-pty-prebuilt-multiarch": "^0.15.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -23,10 +23,10 @@ import React from 'react';
 
 import styles from '@/components/EventsTimeline/Item/index.module.css';
 import { formatEventTime } from '@/services/format';
-import { SandboxEvent } from '@/services/types';
+import { AgentEvent } from '@/services/types';
 
 export type Props = {
-  event: SandboxEvent;
+  event: AgentEvent;
 };
 
 /** One card on the timeline, laid out like the dashboard's workspace events. */

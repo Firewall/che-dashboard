@@ -1,13 +1,15 @@
 {
   "name": "@eclipse-che/agent-space-frontend",
   "version": "0.1.0",
-  "description": "Agent Space MVP frontend - manage Kubernetes AgentSandbox resources",
+  "description": "Agent Space prototype frontend - OpenShell agents on a mocked backend",
   "private": true,
   "license": "EPL-2.0",
   "scripts": {
     "build": "webpack --config webpack.config.prod.js",
     "build:dev": "webpack --progress --color --config webpack.config.dev.js",
     "build:watch": "yarn build:dev --watch",
+    "prototype:install": "npm --prefix ../../prototype-server install",
+    "prototype:serve": "node ../../prototype-server/server.mjs",
     "lint:check": "yarn stylelint && yarn eslint",
     "lint:fix": "yarn stylelint:fix && yarn eslint:fix",
     "format:check": "yarn prettier --config ../../../.prettierrc --check src/",

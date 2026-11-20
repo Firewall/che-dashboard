@@ -13,28 +13,20 @@
 /**
  * Runtime configuration, read from `config.json` next to the bundle so a
  * deployment can be re-pointed without rebuilding the application.
+ *
+ * The prototype always runs on the in-memory mock backend, so there is no
+ * cluster to point at - only where the agents live and where the "Workspaces"
+ * button sends the user back to.
  */
 export interface AgentSpaceConfig {
-  /**
-   * - `cluster` always talks to the dashboard backend,
-   * - `mock` always uses the in-memory client,
-   * - `auto` probes the Sandbox API once and falls back to `mock`.
-   */
-  mode: 'auto' | 'cluster' | 'mock';
-  /** Origin in front of `/dashboard/api/...`; empty means same-origin. */
-  kubeApiBaseUrl: string;
   /** Namespace to work in. Empty means "resolve at startup". */
   namespace: string;
-  samplesIndexUrl: string;
   /** Where the "Workspaces" button sends the user back to. */
   dashboardUrl: string;
 }
 
 export const DEFAULT_CONFIG: AgentSpaceConfig = {
-  mode: 'auto',
-  kubeApiBaseUrl: '',
   namespace: '',
-  samplesIndexUrl: './registry/sandbox/index.json',
   dashboardUrl: '../#/workspaces',
 };
 
@@ -49,43 +41,27 @@ function pickString(raw: Record<string, unknown>, key: string, fallback: string)
   return typeof value === 'string' ? value : fallback;
 }
 
-function pickMode(raw: Record<string, unknown>): AgentSpaceConfig['mode'] {
-  const value = raw['mode'];
-  return value === 'cluster' || value === 'mock' || value === 'auto' ? value : DEFAULT_CONFIG.mode;
-}
-
 export function normalizeConfig(raw: unknown): AgentSpaceConfig {
   if (!isRecord(raw)) {
     return { ...DEFAULT_CONFIG };
   }
 
   return {
-    mode: pickMode(raw),
-    kubeApiBaseUrl: pickString(raw, 'kubeApiBaseUrl', DEFAULT_CONFIG.kubeApiBaseUrl).replace(
-      /\/$/,
-      '',
-    ),
     namespace: pickString(raw, 'namespace', DEFAULT_CONFIG.namespace),
-    samplesIndexUrl: pickString(raw, 'samplesIndexUrl', DEFAULT_CONFIG.samplesIndexUrl),
     dashboardUrl: pickString(raw, 'dashboardUrl', DEFAULT_CONFIG.dashboardUrl),
   };
 }
 
-/**
- * `?mode=mock` wins over config.json. It is the quickest way to demo the UI
- * against a cluster that does not have the agent-sandbox controller installed.
- */
+/** `?namespace=` wins over config.json. */
 export function applyUrlOverrides(
   config: AgentSpaceConfig,
   search = window.location.search,
 ): AgentSpaceConfig {
   const params = new URLSearchParams(search);
-  const mode = params.get('mode');
   const namespace = params.get('namespace');
 
   return {
     ...config,
-    mode: mode === 'cluster' || mode === 'mock' || mode === 'auto' ? mode : config.mode,
     namespace: namespace || config.namespace,
   };
 }
