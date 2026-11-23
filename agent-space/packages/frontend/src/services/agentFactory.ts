@@ -113,8 +113,7 @@ export function deriveSandboxName(agentName: string): string {
 /**
  * Builds the DevWorkspace the create form submits.
  *
- * The object is deliberately shaped like the real one, because the Manifest
- * tab of the details page shows it verbatim: `workload-kind: openshell` in
+ * The object is deliberately shaped like the real one: `workload-kind: openshell` in
  * the template attributes, the git remote in the projects, the fixed image
  * in the single container component, and the provider choices in an
  * annotation the controller reads.

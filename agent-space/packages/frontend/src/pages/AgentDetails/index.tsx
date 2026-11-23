@@ -35,7 +35,6 @@ import { ErrorAlert } from '@/components/ErrorAlert';
 import { AgentTab } from '@/pages/AgentDetails/AgentTab';
 import { EventsTab } from '@/pages/AgentDetails/EventsTab';
 import styles from '@/pages/AgentDetails/index.module.css';
-import { ManifestTab } from '@/pages/AgentDetails/ManifestTab';
 import { OverviewTab } from '@/pages/AgentDetails/OverviewTab';
 import { TerminalTab } from '@/pages/AgentDetails/TerminalTab';
 import { AGENT_TAB, isAgentTab, ROUTE } from '@/Routes';
@@ -259,9 +258,6 @@ export function AgentDetails(): React.ReactElement {
           </Tab>
           <Tab eventKey={AGENT_TAB.EVENTS} title={AGENT_TAB.EVENTS}>
             <EventsTab events={events} error={eventsError} />
-          </Tab>
-          <Tab eventKey={AGENT_TAB.MANIFEST} title={AGENT_TAB.MANIFEST}>
-            <ManifestTab agent={agent} />
           </Tab>
           <Tab eventKey={AGENT_TAB.TERMINAL} title={AGENT_TAB.TERMINAL}>
             <TerminalTab agent={agent} />

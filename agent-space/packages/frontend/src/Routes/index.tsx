@@ -40,7 +40,6 @@ export enum AGENT_TAB {
   AGENT = 'Agent',
   OVERVIEW = 'Overview',
   EVENTS = 'Events',
-  MANIFEST = 'Manifest',
   TERMINAL = 'Terminal',
 }
 

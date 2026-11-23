@@ -230,7 +230,7 @@ small in-app mock of the Che dashboard Workspaces page (`#/workspaces`, served b
 the prototype does not link out to a route it does not serve; the sidebar follows the selected
 area. The details page of a running agent opens on its session tabs - the agent harness TUIs
 (`Agent`, one of Claude Code, Codex or the Gemini CLI, in a real terminal) and a real shell
-(`Terminal`) - with the read-only Overview/Events/Manifest tabs kept. Both session tabs need the
+(`Terminal`) - with the read-only Overview/Events tabs kept. Both session tabs need the
 prototype server; without it, the Terminal tab falls back to its offline mock interpreter and the
 Agent tab shows the connection status of its terminal panel.
 
