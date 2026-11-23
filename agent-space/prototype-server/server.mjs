@@ -34,7 +34,7 @@
  *
  * Query parameters: `agent` (DevWorkspace-style name), `repo` (https URL,
  * cloned shallowly on first connect and used as the working directory),
- * `mode` (shell | claude | codex | gemini), `cols`, `rows`, and `token`
+ * `mode` (shell | claude | codex | gemini | opencode | kiro), `cols`, `rows`, and `token`
  * (required in LAN mode only).
  */
 
@@ -81,8 +81,14 @@ const TOKEN = isLoopback ? undefined : randomBytes(24).toString('base64url');
 
 // --- validation ---------------------------------------------------------------
 
-const MODES = ['shell', 'claude', 'codex', 'gemini'];
-const MODE_COMMANDS = { claude: 'claude', codex: 'codex', gemini: 'gemini' };
+const MODES = ['shell', 'claude', 'codex', 'gemini', 'opencode', 'kiro'];
+const MODE_COMMANDS = {
+  claude: 'claude',
+  codex: 'codex',
+  gemini: 'gemini',
+  opencode: 'opencode',
+  kiro: 'kiro-cli',
+};
 const AGENT_NAME = /^[a-z0-9-]{1,63}$/;
 const REPO_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,98}$/;
 
@@ -348,8 +354,8 @@ function sessionCommand(mode, send) {
   }
   send(
     `\r\n\x1b[1m${command} is not on this host's PATH.\x1b[0m\r\n` +
-      `Install it first (npm i -g @anthropic-ai/claude-code, or the codex / gemini CLI),\r\n` +
-      `then reconnect. Closing the session.\r\n`,
+      `Install it first (claude, codex, gemini, opencode or kiro-cli), then reconnect.\r\n` +
+      `Closing the session.\r\n`,
   );
   return undefined;
 }

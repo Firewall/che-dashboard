@@ -25,7 +25,7 @@ export interface AgentHarness {
   /** The OpenShell provider the harness reads. */
   providerId: string;
   /** The CLI a terminal session with this harness runs. */
-  command: 'claude' | 'codex' | 'gemini';
+  command: 'claude' | 'codex' | 'gemini' | 'opencode' | 'kiro';
 }
 
 /** Harness per AI provider. */
@@ -36,6 +36,8 @@ const HARNESS_BY_PROVIDER: Record<
   anthropic: { id: 'claude-code', name: 'Claude Code', command: 'claude' },
   openai: { id: 'codex', name: 'Codex', command: 'codex' },
   vertex: { id: 'gemini-cli', name: 'Gemini CLI', command: 'gemini' },
+  opencode: { id: 'opencode', name: 'OpenCode', command: 'opencode' },
+  kiro: { id: 'kiro-cli', name: 'Kiro CLI', command: 'kiro' },
 };
 
 /** The harness of the agent's AI provider, if the provider has one. */

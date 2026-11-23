@@ -45,6 +45,16 @@ const PROVIDERS: OpenshellProvider[] = [
     name: 'Gemini CLI',
     description: 'Google Gemini models on Vertex AI. Keys from the OpenShell vertex provider.',
   },
+  {
+    id: 'opencode',
+    name: 'OpenCode',
+    description: 'Open source agent CLI, any model. Keys from the OpenShell opencode provider.',
+  },
+  {
+    id: 'kiro',
+    name: 'Kiro CLI',
+    description: 'AWS Kiro agent CLI. Credentials from the OpenShell kiro provider.',
+  },
 ];
 
 /**

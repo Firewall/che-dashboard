@@ -22,7 +22,7 @@ import { useDashboardTheme } from '@/hooks/useDashboardTheme';
 import { DARK_TERMINAL_THEME, LIGHT_TERMINAL_THEME } from '@/services/terminalTheme';
 
 /** The sessions the prototype server can start; see its `MODES` allowlist. */
-export type PtyMode = 'shell' | 'claude' | 'codex' | 'gemini';
+export type PtyMode = 'shell' | 'claude' | 'codex' | 'gemini' | 'opencode' | 'kiro';
 
 export type PtyStatus = 'connecting' | 'connected' | 'closed';
 

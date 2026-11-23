@@ -36,9 +36,11 @@ into the page over WebSocket (see [Prototype server](#prototype-server)).
 Creating an agent asks for exactly two things:
 
 1. the **Git repository URL** that will be cloned on launch (required; must look like an
-   `http(s)` or `git@` URL), and
-2. the **harness** the agent runs (required): Claude Code, Codex or the Gemini CLI. Each
-   harness reads its model keys from an OpenShell provider (anthropic, openai, vertex)
+   `http(s)` or `git@` URL), entered under Import from Git, or the **Universal Developer
+   Agent Image** sample: one click creates an agent with an empty `/sandbox` and no
+   repository, like the dashboard's Empty Workspace sample, and
+2. the **harness** the agent runs (required): Claude Code, Codex, Gemini CLI, OpenCode or
+   Kiro CLI. Each harness reads its model keys from an OpenShell provider
    that the administrator manages.
 
 Everything else is derived or fixed: the name is `<harness>-<repository>-<4 hex>` (for

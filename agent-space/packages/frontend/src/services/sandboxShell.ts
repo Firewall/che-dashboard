@@ -71,6 +71,14 @@ const HARNESS_COMMANDS: Record<string, { command: string; reply: string }> = {
     command: 'gemini',
     reply: 'Hello from the Gemini CLI mock inside the sandbox.',
   },
+  opencode: {
+    command: 'opencode',
+    reply: 'OpenCode mock ready. The Agent tab has the interactive session.',
+  },
+  kiro: {
+    command: 'kiro-cli',
+    reply: 'Kiro CLI mock ready. The Agent tab has the interactive session.',
+  },
 };
 
 /** `runCommand` accepts any command of the attached providers. */
@@ -220,7 +228,7 @@ Commands:
   env                   environment, provider placeholders included
   whoami                current user
   curl <url>            fetch a URL (allowed hosts only)
-  claude | codex | gemini [-p "<prompt>"]   one-shot harness call
+  claude | codex | gemini | opencode | kiro-cli [-p "<prompt>"]   one-shot harness call
   clear                 clear the screen`;
 
 const GIT_LOG = `e4f2a1c (HEAD -> main) fix: align the home title with its test
@@ -356,7 +364,9 @@ content-type: text/plain
 
     case 'claude':
     case 'codex':
-    case 'gemini': {
+    case 'gemini':
+    case 'opencode':
+    case 'kiro-cli': {
       const entry = Object.entries(HARNESS_COMMANDS).find(([, value]) => value.command === command);
       if (entry === undefined) {
         return done(`${command}: command not found\n`);
