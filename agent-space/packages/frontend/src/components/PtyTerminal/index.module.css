@@ -64,15 +64,6 @@
   background-color: #c9190b;
 }
 
-.info {
-  overflow: hidden;
-  flex: 1;
-
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .terminalHost {
   overflow: hidden;
   flex: 1;
