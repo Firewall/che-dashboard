@@ -139,7 +139,7 @@ export function CreateAgent(): React.ReactElement {
           </FormHelperText>
         </FormGroup>
 
-        <FormGroup label="AI provider" isRequired fieldId="agent-provider">
+        <FormGroup label="Harness" isRequired fieldId="agent-provider">
           {areProvidersLoading ? (
             <Spinner size="lg" data-testid="providers-loading" />
           ) : (
@@ -161,7 +161,7 @@ export function CreateAgent(): React.ReactElement {
                   onClick={() => setIsProvidersOpen(!isProvidersOpen)}
                   data-testid="agent-provider-toggle"
                 >
-                  {selectedProvider?.name ?? 'Select an AI provider'}
+                  {selectedProvider?.name ?? 'Select a harness'}
                 </MenuToggle>
               )}
             >
@@ -180,7 +180,8 @@ export function CreateAgent(): React.ReactElement {
           <FormHelperText>
             <HelperText>
               <HelperTextItem>
-                Published by your OpenShell administrator. The agent never sees the keys.
+                The agent CLI that runs in the sandbox. Its model keys come from an OpenShell
+                provider your administrator manages; the agent never sees them.
               </HelperTextItem>
             </HelperText>
           </FormHelperText>

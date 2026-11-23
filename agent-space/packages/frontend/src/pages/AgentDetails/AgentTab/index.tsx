@@ -10,11 +10,12 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 
-import { EmptyState, EmptyStateBody, PageSection } from '@patternfly/react-core';
+import { EmptyState, EmptyStateBody, PageSection, Spinner } from '@patternfly/react-core';
 import { RobotIcon } from '@patternfly/react-icons';
 import React from 'react';
 
 import { PtyTerminal } from '@/components/PtyTerminal';
+import { useFillHeight } from '@/hooks/useFillHeight';
 import styles from '@/pages/AgentDetails/AgentTab/index.module.css';
 import {
   getAgentPhase,
@@ -25,8 +26,6 @@ import {
 } from '@/services/agent';
 import { AgentHarness, getAgentHarness } from '@/services/harnesses';
 import { Agent, AgentPhase } from '@/services/types';
-import { useAppSelector } from '@/store/hooks';
-import { selectProviders } from '@/store/Providers';
 
 export type Props = {
   agent: Agent;
@@ -44,6 +43,19 @@ export type Props = {
 export function AgentTab({ agent }: Props): React.ReactElement {
   const harness = getAgentHarness(getAgentProviderId(agent));
 
+  if (getAgentPhase(agent) === AgentPhase.STARTING) {
+    return (
+      <PageSection data-testid="agent-tab">
+        <EmptyState icon={Spinner} titleText="Starting the agent" headingLevel="h2">
+          <EmptyStateBody>
+            Waiting for the OpenShell sandbox and the repository clone. The session opens here when
+            the agent is running.
+          </EmptyStateBody>
+        </EmptyState>
+      </PageSection>
+    );
+  }
+
   if (getAgentPhase(agent) !== AgentPhase.RUNNING) {
     return (
       <PageSection data-testid="agent-tab">
@@ -59,17 +71,15 @@ export function AgentTab({ agent }: Props): React.ReactElement {
   if (harness === undefined) {
     return (
       <PageSection data-testid="agent-tab">
-        <EmptyState icon={RobotIcon} titleText="No AI provider attached" headingLevel="h2">
-          <EmptyStateBody>
-            The agent has no AI provider with a harness, so there is nothing to run.
-          </EmptyStateBody>
+        <EmptyState icon={RobotIcon} titleText="No harness" headingLevel="h2">
+          <EmptyStateBody>The agent has no harness, so there is nothing to run.</EmptyStateBody>
         </EmptyState>
       </PageSection>
     );
   }
 
   return (
-    <PageSection data-testid="agent-tab">
+    <PageSection padding={{ default: 'noPadding' }} data-testid="agent-tab">
       <HarnessSession agent={agent} harness={harness} />
     </PageSection>
   );
@@ -82,26 +92,19 @@ type SessionProps = {
 
 /** The terminal session with one harness. */
 function HarnessSession({ agent, harness }: SessionProps): React.ReactElement {
-  const providers = useAppSelector(selectProviders);
-  const providerName =
-    providers.find(provider => provider.id === harness.providerId)?.name ?? harness.providerId;
+  const sessionRef = useFillHeight<HTMLDivElement>();
 
   return (
-    <div className={styles.session} data-testid="agent-session">
-      <div className={styles.header} data-testid="agent-session-header">
-        {harness.name} · {providerName} · {getAgentSandboxName(agent)} · {getAgentWorkingDir(agent)}
-      </div>
+    <div className={styles.session} ref={sessionRef} data-testid="agent-session">
       {/* The prototype server runs the harness CLI on the host it runs on;
           production would exec it inside the OpenShell sandbox, over the
           dashboard backend's relay, with keys from OpenShell Providers. */}
-      <span className={styles.note} data-testid="agent-session-note">
-        Prototype: runs on the prototype host, not in an OpenShell sandbox.
-      </span>
       <PtyTerminal
         agentName={agent.metadata.name}
         repositoryUrl={getAgentRepository(agent)}
         mode={harness.command}
         sessionName={`${harness.name} session`}
+        info={`${harness.name} · ${getAgentSandboxName(agent)} · ${getAgentWorkingDir(agent)} · prototype: runs on the host, not in a sandbox`}
       />
     </div>
   );

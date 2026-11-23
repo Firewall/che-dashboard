@@ -26,7 +26,6 @@ import {
   getAgentSandboxName,
 } from '@/services/agent';
 import { formatTimestamp } from '@/services/format';
-import { getAgentHarness } from '@/services/harnesses';
 import { Agent, AGENT_POLICY } from '@/services/types';
 import { useAppSelector } from '@/store/hooks';
 import { selectProviders } from '@/store/Providers';
@@ -45,7 +44,6 @@ export function OverviewTab({ agent }: Props): React.ReactElement {
   const providerId = getAgentProviderId(agent);
   const providerName =
     providers.find(provider => provider.id === providerId)?.name ?? providerId ?? '-';
-  const harness = getAgentHarness(providerId);
 
   return (
     <PageSection data-testid="overview-tab">
@@ -63,12 +61,8 @@ export function OverviewTab({ agent }: Props): React.ReactElement {
           <DescriptionListDescription>{getAgentRepository(agent)}</DescriptionListDescription>
         </DescriptionListGroup>
         <DescriptionListGroup>
-          <DescriptionListTerm>AI provider</DescriptionListTerm>
-          <DescriptionListDescription>{providerName}</DescriptionListDescription>
-        </DescriptionListGroup>
-        <DescriptionListGroup>
           <DescriptionListTerm>Harness</DescriptionListTerm>
-          <DescriptionListDescription>{harness?.name ?? '-'}</DescriptionListDescription>
+          <DescriptionListDescription>{providerName}</DescriptionListDescription>
         </DescriptionListGroup>
         <DescriptionListGroup>
           <DescriptionListTerm>Sandbox</DescriptionListTerm>

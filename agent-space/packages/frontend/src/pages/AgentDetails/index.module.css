@@ -1,0 +1,19 @@
+/* The harness terminal, sized by useFillHeight to reach the window bottom. */
+.session {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--pf-t--global--spacer--sm);
+}
+
+/* Tight padding all round: the agent session below is what the page is for. */
+.header {
+  padding: var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--md) 0;
+}
+
+.title {
+  display: inline;
+}
+
+.body {
+  padding: 0 var(--pf-t--global--spacer--md);
+}

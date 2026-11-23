@@ -12,9 +12,7 @@
 
 /* The live shell fills the window the way the Agent tab's session does. */
 .liveTerminal {
-  height: calc(100dvh - 20rem);
-  min-height: 24rem;
-  margin-top: var(--pf-t--global--spacer--md);
+  margin-top: var(--pf-t--global--spacer--sm);
 }
 
 .mockAlert {

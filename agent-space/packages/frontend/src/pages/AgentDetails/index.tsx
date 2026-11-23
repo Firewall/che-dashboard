@@ -21,8 +21,6 @@ import {
   FlexItem,
   PageSection,
   Spinner,
-  Stack,
-  StackItem,
   Tab,
   Tabs,
   Title,
@@ -36,6 +34,7 @@ import { DeleteAgentModal } from '@/components/DeleteAgentModal';
 import { ErrorAlert } from '@/components/ErrorAlert';
 import { AgentTab } from '@/pages/AgentDetails/AgentTab';
 import { EventsTab } from '@/pages/AgentDetails/EventsTab';
+import styles from '@/pages/AgentDetails/index.module.css';
 import { ManifestTab } from '@/pages/AgentDetails/ManifestTab';
 import { OverviewTab } from '@/pages/AgentDetails/OverviewTab';
 import { TerminalTab } from '@/pages/AgentDetails/TerminalTab';
@@ -193,74 +192,64 @@ export function AgentDetails(): React.ReactElement {
 
   return (
     <>
-      <PageSection>
-        <Stack hasGutter>
-          <StackItem>
+      {/* One compact row, so the Agent tab's session gets the height. */}
+      <PageSection padding={{ default: 'noPadding' }} className={styles.header}>
+        <Flex
+          alignItems={{ default: 'alignItemsCenter' }}
+          spaceItems={{ default: 'spaceItemsSm' }}
+          flexWrap={{ default: 'nowrap' }}
+        >
+          <FlexItem>
             <Breadcrumb>
               <BreadcrumbItem to="#" onClick={() => navigate(ROUTE.AGENTS)}>
                 {pageTitle(SECTION.AGENTS)}
               </BreadcrumbItem>
-              <BreadcrumbItem isActive>{name}</BreadcrumbItem>
-            </Breadcrumb>
-          </StackItem>
-          <StackItem>
-            <Flex>
-              <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
-                <Title headingLevel="h1" size="2xl">
+              <BreadcrumbItem isActive>
+                <Title headingLevel="h1" size="lg" className={styles.title}>
                   {name}
                 </Title>
-              </FlexItem>
-              <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
-                <AgentStatusLabel phase={phase} agent={agent} />
-              </FlexItem>
-              <FlexItem align={{ default: 'alignRight' }}>
-                <Flex>
-                  <FlexItem>
-                    <Button
-                      variant={ButtonVariant.secondary}
-                      isDisabled={isBusy || phase !== AgentPhase.RUNNING}
-                      onClick={() => setSearchParams({ tab: AGENT_TAB.AGENT }, { replace: true })}
-                      data-testid="action-open"
-                    >
-                      Open
-                    </Button>
-                  </FlexItem>
-                  {getAvailableActions(phase).map(action => (
-                    <FlexItem key={action}>
-                      <Button
-                        variant={ButtonVariant.secondary}
-                        isDisabled={isBusy}
-                        isLoading={pendingName === name}
-                        onClick={() => void runAction(action)}
-                        data-testid={`action-${action}`}
-                      >
-                        {ACTION_LABELS[action]}
-                      </Button>
-                    </FlexItem>
-                  ))}
-                  <FlexItem>
-                    <Button
-                      variant={ButtonVariant.danger}
-                      icon={<TrashIcon />}
-                      iconPosition="left"
-                      isDisabled={isBusy}
-                      onClick={() => setWantDelete(true)}
-                      data-testid="delete-button"
-                    >
-                      Delete
-                    </Button>
-                  </FlexItem>
-                </Flex>
+              </BreadcrumbItem>
+            </Breadcrumb>
+          </FlexItem>
+          <FlexItem>
+            <AgentStatusLabel phase={phase} agent={agent} />
+          </FlexItem>
+          <FlexItem align={{ default: 'alignRight' }}>
+            <Flex spaceItems={{ default: 'spaceItemsSm' }} flexWrap={{ default: 'nowrap' }}>
+              {getAvailableActions(phase).map(action => (
+                <FlexItem key={action}>
+                  <Button
+                    variant={ButtonVariant.secondary}
+                    size="sm"
+                    isDisabled={isBusy}
+                    isLoading={pendingName === name}
+                    onClick={() => void runAction(action)}
+                    data-testid={`action-${action}`}
+                  >
+                    {ACTION_LABELS[action]}
+                  </Button>
+                </FlexItem>
+              ))}
+              <FlexItem>
+                <Button
+                  variant={ButtonVariant.secondary}
+                  isDanger
+                  size="sm"
+                  icon={<TrashIcon />}
+                  isDisabled={isBusy}
+                  onClick={() => setWantDelete(true)}
+                  data-testid="delete-button"
+                >
+                  Delete
+                </Button>
               </FlexItem>
             </Flex>
-          </StackItem>
-          <StackItem>
-            <ErrorAlert title="The action failed" error={actionError} onClose={clearError} />
-          </StackItem>
-        </Stack>
+          </FlexItem>
+        </Flex>
+        <ErrorAlert title="The action failed" error={actionError} onClose={clearError} />
       </PageSection>
 
-      <PageSection>
+      <PageSection padding={{ default: 'noPadding' }} className={styles.body}>
         <Tabs activeKey={activeTab} onSelect={handleTabSelect} data-testid="agent-tabs">
           <Tab eventKey={AGENT_TAB.AGENT} title={AGENT_TAB.AGENT}>
             <AgentTab agent={agent} />

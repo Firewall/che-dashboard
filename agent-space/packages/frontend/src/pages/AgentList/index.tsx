@@ -38,7 +38,7 @@ import { buildAgentActionItems } from '@/services/agentActions';
 import match from '@/services/filter';
 import { formatAge } from '@/services/format';
 import { pageTitle, SECTION } from '@/services/pageTitle';
-import { Agent, AgentAction } from '@/services/types';
+import { Agent, AgentAction, AgentPhase } from '@/services/types';
 import {
   agentsActionCreators,
   selectAgentActionError,
@@ -99,6 +99,19 @@ export function AgentList(): React.ReactElement {
       void dispatch(agentsActionCreators.runAgentAction(name, action));
     },
     [dispatch],
+  );
+
+  // Like the dashboard's workspace list: Open starts a stopped agent and goes
+  // straight to its session, which waits for the sandbox to come up.
+  const handleOpen = React.useCallback(
+    (agent: Agent) => {
+      const name = agent.metadata.name;
+      if (getAgentPhase(agent) === AgentPhase.STOPPED) {
+        runAction(name, 'start');
+      }
+      navigate(buildAgentDetailsRoute(name, AGENT_TAB.AGENT));
+    },
+    [navigate, runAction],
   );
 
   const handleConfirmDelete = React.useCallback(async () => {
@@ -213,8 +226,9 @@ export function AgentList(): React.ReactElement {
               <Th>Status</Th>
               <Th>Name</Th>
               <Th>Repository</Th>
-              <Th>AI provider</Th>
+              <Th>Harness</Th>
               <Th>Age</Th>
+              <Th screenReaderText="Open" />
               <Th screenReaderText="Actions" />
             </Tr>
           </Thead>
@@ -239,13 +253,24 @@ export function AgentList(): React.ReactElement {
                   <Td dataLabel="Repository">
                     <Content component="small">{getAgentRepository(agent)}</Content>
                   </Td>
-                  <Td dataLabel="AI provider">
+                  <Td dataLabel="Harness">
                     {(() => {
                       const id = getAgentProviderId(agent);
                       return id === undefined ? '-' : providerName(id);
                     })()}
                   </Td>
                   <Td dataLabel="Age">{formatAge(agent.metadata.creationTimestamp)}</Td>
+                  <Td dataLabel="Open" modifier="fitContent">
+                    <Button
+                      variant={ButtonVariant.link}
+                      isInline
+                      isDisabled={isPending}
+                      onClick={() => handleOpen(agent)}
+                      data-testid={`open-agent-${name}`}
+                    >
+                      Open
+                    </Button>
+                  </Td>
                   <Td dataLabel="Actions" isActionCell>
                     <ActionsColumn items={buildActions(agent)} />
                   </Td>

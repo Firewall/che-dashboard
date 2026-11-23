@@ -19,6 +19,7 @@ import React from 'react';
 
 import { PtyTerminal } from '@/components/PtyTerminal';
 import { useDashboardTheme } from '@/hooks/useDashboardTheme';
+import { useFillHeight } from '@/hooks/useFillHeight';
 import styles from '@/pages/AgentDetails/TerminalTab/index.module.css';
 import {
   getAgentPhase,
@@ -47,6 +48,7 @@ export type Props = {
 export function TerminalTab({ agent }: Props): React.ReactElement {
   const { isDarkTheme } = useDashboardTheme();
   const hostRef = React.useRef<HTMLDivElement>(null);
+  const liveRef = useFillHeight<HTMLDivElement>();
 
   const isRunning = getAgentPhase(agent) === AgentPhase.RUNNING;
   const sandboxName = getAgentSandboxName(agent);
@@ -205,8 +207,8 @@ export function TerminalTab({ agent }: Props): React.ReactElement {
 
   if (!isOfflineMock) {
     return (
-      <PageSection data-testid="terminal-tab">
-        <div className={styles.liveTerminal}>
+      <PageSection padding={{ default: 'noPadding' }} data-testid="terminal-tab">
+        <div className={styles.liveTerminal} ref={liveRef}>
           <PtyTerminal
             agentName={agent.metadata.name}
             repositoryUrl={getAgentRepository(agent)}

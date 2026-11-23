@@ -35,6 +35,8 @@ export type Props = {
   mode: PtyMode;
   /** What the session is called, in labels and the terminal's aria label. */
   sessionName: string;
+  /** Extra context shown on the status bar, next to the connection state. */
+  info?: React.ReactNode;
   /** Called once the WebSocket has opened. */
   onConnected?: () => void;
   /**
@@ -87,6 +89,7 @@ export function PtyTerminal({
   repositoryUrl,
   mode,
   sessionName,
+  info,
   onConnected,
   onUnreachable,
   dataTestId,
@@ -226,6 +229,7 @@ export function PtyTerminal({
         >
           {STATUS_LABELS[status]}
         </span>
+        {info !== undefined && <span className={styles.info}>{info}</span>}
         {status === 'closed' && (
           <Button
             variant={ButtonVariant.secondary}

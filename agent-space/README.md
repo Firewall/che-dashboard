@@ -37,9 +37,9 @@ Creating an agent asks for exactly two things:
 
 1. the **Git repository URL** that will be cloned on launch (required; must look like an
    `http(s)` or `git@` URL), and
-2. the **AI provider** the agent runs with (required, one of the providers the backend
-   publishes: Anthropic, OpenAI or Google Vertex AI in the mock). The provider picks the
-   harness: Claude Code, Codex or the Gemini CLI.
+2. the **harness** the agent runs (required): Claude Code, Codex or the Gemini CLI. Each
+   harness reads its model keys from an OpenShell provider (anthropic, openai, vertex)
+   that the administrator manages.
 
 Everything else is derived or fixed: the name is `<harness>-<repository>-<4 hex>` (for
 example `claude-spring-petclinic-7f3a`), the image is

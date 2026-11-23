@@ -32,18 +32,18 @@ const DEFAULT_NAMESPACE = 'user-devspaces';
 const PROVIDERS: OpenshellProvider[] = [
   {
     id: 'anthropic',
-    name: 'Anthropic',
-    description: 'Claude models for the agent in the sandbox.',
+    name: 'Claude Code',
+    description: 'Anthropic Claude models. Keys from the OpenShell anthropic provider.',
   },
   {
     id: 'openai',
-    name: 'OpenAI',
-    description: 'GPT models through the OpenAI API.',
+    name: 'Codex',
+    description: 'OpenAI GPT models. Keys from the OpenShell openai provider.',
   },
   {
     id: 'vertex',
-    name: 'Google Vertex AI',
-    description: 'Gemini models on Google Cloud.',
+    name: 'Gemini CLI',
+    description: 'Google Gemini models on Vertex AI. Keys from the OpenShell vertex provider.',
   },
 ];
 
