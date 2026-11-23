@@ -265,8 +265,10 @@ export class MockAgentClient {
       }
       this.recordEvent(namespace, name, {
         uid: `${name}-cloned-${hex4()}`,
-        reason: 'RepositoryCloned',
-        message: 'Repository cloned into the sandbox.',
+        reason: agent.spec.template.projects?.length ? 'RepositoryCloned' : 'WorkspaceReady',
+        message: agent.spec.template.projects?.length
+          ? 'Repository cloned into the sandbox.'
+          : 'No repository to clone. /sandbox is empty.',
         lastTimestamp: new Date().toISOString(),
         reportingComponent: 'openshell-controller',
       });

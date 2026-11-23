@@ -17,13 +17,7 @@ import React from 'react';
 import { PtyTerminal } from '@/components/PtyTerminal';
 import { useFillHeight } from '@/hooks/useFillHeight';
 import styles from '@/pages/AgentDetails/AgentTab/index.module.css';
-import {
-  getAgentPhase,
-  getAgentProviderId,
-  getAgentRepository,
-  getAgentSandboxName,
-  getAgentWorkingDir,
-} from '@/services/agent';
+import { getAgentPhase, getAgentProviderId, getAgentRepositoryUrl } from '@/services/agent';
 import { AgentHarness, getAgentHarness } from '@/services/harnesses';
 import { Agent, AgentPhase } from '@/services/types';
 
@@ -101,10 +95,9 @@ function HarnessSession({ agent, harness }: SessionProps): React.ReactElement {
           dashboard backend's relay, with keys from OpenShell Providers. */}
       <PtyTerminal
         agentName={agent.metadata.name}
-        repositoryUrl={getAgentRepository(agent)}
+        repositoryUrl={getAgentRepositoryUrl(agent)}
         mode={harness.command}
         sessionName={`${harness.name} session`}
-        info={`${harness.name} · ${getAgentSandboxName(agent)} · ${getAgentWorkingDir(agent)} · prototype: runs on the host, not in a sandbox`}
       />
     </div>
   );

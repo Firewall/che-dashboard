@@ -47,10 +47,15 @@ export const ACTION_LABELS: Record<AgentAction, string> = {
   stop: 'Stop',
 };
 
-/** The git remote the sandbox clones on launch. */
-export function getAgentRepository(agent: Agent): string {
+/** The git remote the sandbox clones on launch; empty for an agent with none. */
+export function getAgentRepositoryUrl(agent: Agent): string {
   const [project] = agent.spec?.template?.projects ?? [];
-  return project?.git?.remotes?.origin ?? '-';
+  return project?.git?.remotes?.origin ?? '';
+}
+
+/** The repository for display. */
+export function getAgentRepository(agent: Agent): string {
+  return getAgentRepositoryUrl(agent) || 'None';
 }
 
 /**
@@ -65,7 +70,9 @@ export function getAgentRepositoryName(agent: Agent): string {
 
 /** Where the agent harness and the shell start: `/sandbox/<repository>`. */
 export function getAgentWorkingDir(agent: Agent): string {
-  return `/sandbox/${getAgentRepositoryName(agent)}`;
+  return getAgentRepositoryUrl(agent) === ''
+    ? '/sandbox'
+    : `/sandbox/${getAgentRepositoryName(agent)}`;
 }
 
 /** The container image the agent runs. */

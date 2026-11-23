@@ -319,7 +319,7 @@ function sessionEnv({ agent, repo, repoName, cols, rows }) {
     LINES: String(rows),
     OPENSHELL_SANDBOX: agent,
     OPENSHELL_REPO: repo,
-    OPENSHELL_WORKDIR: `/sandbox/${repoName}`,
+    OPENSHELL_WORKDIR: repoName === undefined ? '/sandbox' : `/sandbox/${repoName}`,
     PS1: prompt,
     PROMPT: prompt,
   };
@@ -496,12 +496,16 @@ wss.on('connection', (ws, req) => {
   if (!MODES.includes(mode)) {
     problems.push(`mode must be one of: ${MODES.join(', ')}`);
   }
+  // An empty repo is an agent with no project: nothing is cloned and the
+  // session starts in an empty /sandbox.
   const repo = url.searchParams.get('repo') ?? '';
   let repoName;
-  try {
-    repoName = repoNameFromUrl(repo);
-  } catch (error) {
-    problems.push(error.message);
+  if (repo !== '') {
+    try {
+      repoName = repoNameFromUrl(repo);
+    } catch (error) {
+      problems.push(error.message);
+    }
   }
 
   if (problems.length > 0) {
@@ -522,9 +526,19 @@ wss.on('connection', (ws, req) => {
   }
 
   send(`Agent Space prototype - ${mode} session for '${agent}'\r\n`);
-  send(`Repository: ${repo} -> ${env.OPENSHELL_WORKDIR} (mapped onto this host)\r\n\r\n`);
+  send(
+    repo === ''
+      ? `No repository: an empty ${env.OPENSHELL_WORKDIR} (mapped onto this host)\r\n\r\n`
+      : `Repository: ${repo} -> ${env.OPENSHELL_WORKDIR} (mapped onto this host)\r\n\r\n`,
+  );
 
-  ensureClone({ agent, repo, repoName, send })
+  const workdir =
+    repoName === undefined
+      ? fsp.mkdir(path.join(CLONE_ROOT, agent, 'empty'), { recursive: true }).then(() =>
+          path.join(CLONE_ROOT, agent, 'empty'),
+        )
+      : ensureClone({ agent, repo, repoName, send });
+  workdir
     .then(cwd => {
       if (ws.readyState !== ws.OPEN) {
         // The tab went away while the clone was running.

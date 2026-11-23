@@ -137,14 +137,17 @@ export function buildAgent(namespace: string, request: CreateAgentRequest, name:
         attributes: {
           [WORKLOAD_KIND_ATTRIBUTE]: 'openshell',
         },
-        projects: [
-          {
-            name: repositoryName,
-            git: {
-              remotes: { origin: request.repositoryUrl.trim() },
-            },
-          },
-        ],
+        projects:
+          request.repositoryUrl.trim() === ''
+            ? []
+            : [
+                {
+                  name: repositoryName,
+                  git: {
+                    remotes: { origin: request.repositoryUrl.trim() },
+                  },
+                },
+              ],
         components: [
           {
             name: 'openshell-agent',

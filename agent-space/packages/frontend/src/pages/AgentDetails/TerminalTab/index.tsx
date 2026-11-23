@@ -24,8 +24,8 @@ import styles from '@/pages/AgentDetails/TerminalTab/index.module.css';
 import {
   getAgentPhase,
   getAgentProviderId,
-  getAgentRepository,
   getAgentRepositoryName,
+  getAgentRepositoryUrl,
   getAgentSandboxName,
 } from '@/services/agent';
 import { createShellState, runCommand, shellPrompt, ShellState } from '@/services/sandboxShell';
@@ -211,7 +211,7 @@ export function TerminalTab({ agent }: Props): React.ReactElement {
         <div className={styles.liveTerminal} ref={liveRef}>
           <PtyTerminal
             agentName={agent.metadata.name}
-            repositoryUrl={getAgentRepository(agent)}
+            repositoryUrl={getAgentRepositoryUrl(agent)}
             mode="shell"
             sessionName="Sandbox shell"
             onUnreachable={handleUnreachable}
